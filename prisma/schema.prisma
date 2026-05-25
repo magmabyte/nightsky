@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  apartment String?
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+
+  tools          Tool[]
+  borrowRequests BorrowRequest[] @relation("Borrower")
+  lendRequests   BorrowRequest[] @relation("Lender")
+}
+
+model Tool {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  category    String
+  imageUrl    String?
+  deposit     Float?
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId        String
+  owner          User            @relation(fields: [ownerId], references: [id])
+  borrowRequests BorrowRequest[]
+}
+
+model BorrowRequest {
+  id        String   @id @default(uuid())
+  status    String   @default("pending")
+  message   String?
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  toolId     String
+  tool       Tool   @relation(fields: [toolId], references: [id])
+  borrowerId String
+  borrower   User   @relation("Borrower", fields: [borrowerId], references: [id])
+  lenderId   String
+  lender     User   @relation("Lender", fields: [lenderId], references: [id])
+}
